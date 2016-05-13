@@ -1,6 +1,6 @@
 {
   "name": "btd-ahgora",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Check the time you have to clock in/out based on Ahgora records.",
   "main": "built/index.js",
   "bin": "built/index.js",
