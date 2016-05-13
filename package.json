@@ -1,0 +1,31 @@
+{
+  "name": "btd-ahgora",
+  "version": "1.0.0",
+  "description": "Check the time you have to clock in/out based on Ahgora records.",
+  "main": "built/index.js",
+  "scripts": {
+    "start": "node built/index.js",
+    "dev": "nodemon built/index.js",
+    "build": "tsc",
+    "build-watch": "tsc -w",
+    "clean": "gulp clean",
+    "test": "echo 'no tests'"
+  },
+  "author": "BrunoLM <brunolm7@gmail.com> (http://codingwise.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.11.0",
+    "cheerio": "^0.20.0",
+    "commander": "^2.9.0",
+    "moment": "^2.13.0",
+    "querystring": "^0.2.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-shell": "^0.5.2",
+    "nodemon": "^1.9.2",
+    "rimraf": "^2.5.2",
+    "tslint": "^3.10.1",
+    "typescript": "^1.8.10"
+  }
+}
