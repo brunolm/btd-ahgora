@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import querystring = require('querystring');
 import axios = require('axios');
 import cheerio = require('cheerio');

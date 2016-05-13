@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Check the time you have to clock in/out based on Ahgora records.",
   "main": "built/index.js",
+  "bin": "built/index.js",
   "scripts": {
     "start": "node built/index.js",
     "dev": "nodemon built/index.js",
