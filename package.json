@@ -2,7 +2,7 @@
   "name": "btd-ahgora",
   "version": "1.0.3",
   "description": "Check the time you have to clock in/out based on Ahgora records.",
-  "main": "built/index.js",
+  "main": "built/ahgora-service.js",
   "bin": "built/index.js",
   "scripts": {
     "start": "node built/index.js",

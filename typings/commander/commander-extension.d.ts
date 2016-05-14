@@ -8,5 +8,6 @@ declare namespace commander {
     tolerance: number;
     workHours: number;
     showGrid: boolean;
+    debug: boolean;
   }
 }
