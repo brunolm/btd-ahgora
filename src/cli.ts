@@ -12,7 +12,7 @@ export default async function run(options: IOptions) {
   }
 
   const result = await service.parseResult(times);
-  console.log(result);
+  console.log(`\n> ${result}`);
   console.log();
   console.log();
 };

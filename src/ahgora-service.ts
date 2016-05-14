@@ -86,13 +86,13 @@ export default class AhgoraService {
       case 1:
         this.debug('Before lunch');
 
-        return `\n> You can go to lunch at ${this.options.lunchAt}`;
+        return `You can go to lunch at ${this.options.lunchAt}`;
       case 2:
         this.debug('During lunch');
 
         let backFromLunchAt = this.clone(t2);
         backFromLunchAt.setMinutes(backFromLunchAt.getMinutes() + this.options.lunchTime);
-        return `\n> You can come back from lunch at ${moment(backFromLunchAt).format('HH:mm')} (±${this.options.tolerance})`;
+        return `You can come back from lunch at ${moment(backFromLunchAt).format('HH:mm')} (±${this.options.tolerance})`;
       case 3:
         this.debug('After lunch');
 
@@ -114,9 +114,9 @@ export default class AhgoraService {
 
         const beatTheDot = section;
 
-        return `\n> You can leave at ${moment(beatTheDot).format('HH:mm')} (±${this.options.tolerance})`;
+        return `You can leave at ${moment(beatTheDot).format('HH:mm')} (±${this.options.tolerance})`;
       default:
-        return 'Done.';
+        return 'All done for today!';
     }
   }
 
