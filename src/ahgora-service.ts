@@ -46,7 +46,7 @@ export default class AhgoraService {
       throw new Error('Not logged in');
     }
 
-    const result = await axios.get(`${this.url}/externo/batidas`, {
+    const result = await axios.get(`${this.url}/externo/batidas?cache=${this.options.user}`, {
       headers: {
         'Cookie': this.cookie.split(';')[0],
       },
