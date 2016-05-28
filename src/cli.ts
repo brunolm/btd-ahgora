@@ -4,14 +4,25 @@ export default async function run(options: IOptions) {
   const service = new AhgoraService(options);
 
   await service.login();
-  const times = await service.getTimes();
+  const data = await service.getTimes();
 
   if (options.showGrid) {
-    console.log(times);
+    const msg = Object.keys(data.times).reduce((grid, next) => {
+      const time = data.times[next];
+      if (time.beatsRaw) {
+        grid += `${next} - ${time.beatsRaw}`;
+        if (time.patch.wrong.time) {
+          grid += ` (${time.patch.wrong.time} -> ${time.patch.correct.time})`;
+        }
+        grid += '\n';
+      }
+      return grid;
+    }, '');
+    console.log(msg);
     console.log('-----');
   }
 
-  const result = await service.parseResult(times);
+  const result = await service.parseResult(data.times);
   console.log(`\n> ${result}`);
   console.log();
   console.log();

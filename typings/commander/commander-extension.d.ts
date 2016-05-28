@@ -8,6 +8,7 @@ declare namespace commander {
     tolerance: number;
     workHours: number;
     showGrid: boolean;
+    forceNocache: boolean;
     debug: boolean;
   }
 }
