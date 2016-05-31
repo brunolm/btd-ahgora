@@ -13,6 +13,7 @@ export interface IOptions {
   tolerance: number;
   workHours: number;
   showGrid: boolean;
+  verbose: boolean;
   forceNocache: boolean;
   debug: boolean;
 }
@@ -195,6 +196,29 @@ export default class AhgoraService {
       default:
         return 'No beats registered today!';
     }
+  }
+
+  public parseGrid(times: ITimes) {
+    return Object.keys(times).reduce((grid, next) => {
+      const time = times[next];
+
+      if (time.beatsRaw) {
+        grid += `${next} - ${time.beatsRaw}`;
+        if (time.patch.wrong.time) {
+          grid += ` (${time.patch.wrong.time} -> ${time.patch.correct.time})`;
+        }
+        grid += '\n';
+
+        if (this.options.verbose) {
+          const scenarios = this.calc.apply(this, time.beatsRaw.match(/\d{2}:\d{2}/g)) as string[];
+          if (scenarios.length) {
+            grid += '  ' + scenarios.join('\n  ');
+            grid += '\n';
+          }
+        }
+      }
+      return grid;
+    }, '');
   }
 
   public calc(time1: string, time2: string, time3: string, time4: string) {

@@ -7,17 +7,8 @@ export default async function run(options: IOptions) {
   const data = await service.getTimes();
 
   if (options.showGrid) {
-    const msg = Object.keys(data.times).reduce((grid, next) => {
-      const time = data.times[next];
-      if (time.beatsRaw) {
-        grid += `${next} - ${time.beatsRaw}`;
-        if (time.patch.wrong.time) {
-          grid += ` (${time.patch.wrong.time} -> ${time.patch.correct.time})`;
-        }
-        grid += '\n';
-      }
-      return grid;
-    }, '');
+    const msg = service.parseGrid(data.times);
+
     console.log(msg);
     console.log('-----');
   }

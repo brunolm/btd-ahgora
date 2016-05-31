@@ -13,6 +13,7 @@ commander
   .option('-l, --lunch-time [minutes]', 'Lunch minutes', (v, def) => +v || def, 60)
   .option('-w, --work-hours [hours]', 'Total work hours a day', (v, def) => +v, 8)
   .option('-s, --show-grid', 'Shows whole month grid')
+  .option('-v, --verbose', 'Calculates and predicts times')
   .option('-f, --force-nocache', 'Try to force no-cache')
   .option('-d, --debug', 'Show debug information')
   .parse(process.argv);
@@ -26,9 +27,14 @@ const options: IOptions = {
   tolerance: commander.tolerance || +process.env.AHGORA_TOLERANCE || 10,
   workHours: commander.workHours || +process.env.AHGORA_WORKHOURS || 8,
   showGrid: commander.showGrid || !!process.env.AHGORA_SHOWGRID || false,
+  verbose: commander.verbose || !!process.env.AHGORA_VERBOSE || false,
   forceNocache: !!commander.forceNocache,
   debug: !!commander.debug,
 };
+
+if (options.verbose) {
+  options.showGrid = true;
+}
 
 const nameof = exp => exp.toString().match(/[.](\w+)/)[1];
 
