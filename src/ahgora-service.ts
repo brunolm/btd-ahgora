@@ -108,6 +108,12 @@ export default class AhgoraService {
                 type: $('td:eq(1)', extraInfo).text().trim(),
                 reason: $('td:eq(2)', extraInfo).text().trim(),
               };
+
+              if (/esquecimento/i.test(times[key].patch.wrong.reason)) {
+                const wrong = times[key].patch.wrong;
+                times[key].patch.wrong = times[key].patch.correct;
+                times[key].patch.correct = wrong;
+              }
             }
           }
         });
@@ -202,9 +208,7 @@ export default class AhgoraService {
     const scenarios = [];
 
     const day = moment(`0${this.options.workHours}00`.slice(-4), this.hourMinuteFormat);
-
     const morning = this.subTime(t2, t1);
-
     const afternoon = this.subTime(t4, t3);
 
     const workedHours = t4.isValid()
