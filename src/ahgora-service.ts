@@ -39,6 +39,9 @@ export interface ITimePatch {
 export default class AhgoraService {
   private url = 'https://www.ahgora.com.br';
   private cookie: string;
+  private hourMinuteFormat = 'HH:mm';
+  private hoursUnity = 'hours';
+  private minutesUnity = 'minutes';
 
   constructor(private options: IOptions) {
     this.debug('Options', options);
@@ -150,9 +153,9 @@ export default class AhgoraService {
   public parseResult(times: ITimes) {
     this.debug('parseResult()');
     const today = this.getToday(times);
-    const t1 = moment(today.beats[0], 'HH:mm');
-    const t2 = moment(today.beats[1], 'HH:mm');
-    const t3 = moment(today.beats[2], 'HH:mm');
+    const t1 = moment(today.beats[0], this.hourMinuteFormat);
+    const t2 = moment(today.beats[1], this.hourMinuteFormat);
+    const t3 = moment(today.beats[2], this.hourMinuteFormat);
 
     switch (today.beats.length) {
       case 1:
@@ -164,7 +167,7 @@ export default class AhgoraService {
 
         let backFromLunchAt = moment(t2);
         backFromLunchAt.add(this.options.lunchTime, 'minutes');
-        return `You can come back from lunch at ${moment(backFromLunchAt).format('HH:mm')} (±${this.options.tolerance})`;
+        return `You can come back from lunch at ${moment(backFromLunchAt).format(this.hourMinuteFormat)} (±${this.options.tolerance})`;
       case 3:
         this.debug('After lunch');
 
@@ -180,12 +183,78 @@ export default class AhgoraService {
         section.add(d.hour(), 'hours');
         section.add(d.minute(), 'minutes');
 
-        return `You can leave at ${moment(section).format('HH:mm')} (±${this.options.tolerance})`;
+        return `You can leave at ${moment(section).format(this.hourMinuteFormat)} (±${this.options.tolerance})`;
       case 4:
         return 'All done for today!';
       default:
         return 'No beats registered today!';
     }
+  }
+
+  public calc(time1: string, time2: string, time3: string, time4: string) {
+    const [ t1, t2, t3, t4 ] = [
+      moment(time1, this.hourMinuteFormat),
+      moment(time2, this.hourMinuteFormat),
+      moment(time3, this.hourMinuteFormat),
+      moment(time4, this.hourMinuteFormat),
+    ];
+
+    const scenarios = [];
+
+    const day = moment(`0${this.options.workHours}00`.slice(-4), this.hourMinuteFormat);
+
+    const morning = this.subTime(t2, t1);
+
+    const afternoon = this.subTime(t4, t3);
+
+    const workedHours = t4.isValid()
+      ? moment(morning).add(afternoon.hour(), this.hoursUnity).add(afternoon.minute(), this.minutesUnity)
+      : moment(morning);
+
+    if (t4.isValid()) {
+      if (workedHours.isAfter(moment(day).add(10, this.minutesUnity))) {
+        const timeToRemove = this.subTime(workedHours, day);
+        {
+          // Scenario 1 - Remove from end of the day
+          const newEndTime = this.subTime(t4, timeToRemove);
+          scenarios.push(`${time1} ${time2} ${time3} *${newEndTime.format(this.hourMinuteFormat)}*`);
+        }
+      }
+      else if (workedHours.isBefore(moment(day).add(-10, this.minutesUnity))) {
+        const timeToAdd = this.subTime(day, workedHours);
+        {
+          // Scenario 1 - Add to the end of the day
+          const newEndTime = this.addTime(t4, timeToAdd);
+          scenarios.push(`${time1} ${time2} ${time3} *${newEndTime.format(this.hourMinuteFormat)}*`);
+        }
+      }
+    }
+    else if (t3.isValid()) {
+      {
+        // Scenario 1 - Predict end of the day
+        const newEndTime = this.addTime(t3, this.subTime(day, morning));
+        scenarios.push(`${time1} ${time2} ${time3} *${newEndTime.format(this.hourMinuteFormat)}*`);
+      }
+      {
+        // Scenario 2 - Predict beginning of the day
+        const section = this.subTime(t1, this.subTime(day, this.subTime(t3, t2)));
+        scenarios.push(`*${section.format(this.hourMinuteFormat)}* ${time1} ${time2} ${time3}`);
+      }
+    }
+
+    return scenarios;
+  }
+
+  private addTime(target: moment.Moment, date: moment.Moment) {
+    return moment(target)
+      .add(date.hour(), this.hoursUnity)
+      .add(date.minute(), this.minutesUnity);
+  }
+
+  private subTime(target: moment.Moment, date: moment.Moment) {
+    return moment(target)
+      .add(-date.hour(), this.hoursUnity)
+      .add(-date.minute(), this.minutesUnity);
   }
 
   private debug(msg?: string, ...args: any[]) {

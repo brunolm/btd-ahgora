@@ -10,7 +10,7 @@
     "build": "tsc",
     "build-watch": "tsc -w",
     "clean": "gulp clean",
-    "test": "echo 'no tests'"
+    "test": "mocha built/spec"
   },
   "author": "BrunoLM <brunolm7@gmail.com> (http://codingwise.com/)",
   "repository": {
@@ -28,8 +28,10 @@
     "querystring": "^0.2.0"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "gulp": "^3.9.1",
     "gulp-shell": "^0.5.2",
+    "mocha": "^2.5.3",
     "nodemon": "^1.9.2",
     "rimraf": "^2.5.2",
     "tslint": "^3.10.1",
