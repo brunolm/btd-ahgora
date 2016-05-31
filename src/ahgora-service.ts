@@ -203,7 +203,7 @@ export default class AhgoraService {
       const time = times[next];
 
       if (time.beatsRaw) {
-        grid += `${next} - ${time.beatsRaw}`;
+        grid += `${next} - ${time.beatsRaw} (${time.total.match(/\d{2}:\d{2}/)})`;
         if (time.patch.wrong.time) {
           grid += ` (${time.patch.wrong.time} -> ${time.patch.correct.time})`;
         }
