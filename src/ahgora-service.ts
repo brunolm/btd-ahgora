@@ -12,6 +12,7 @@ export interface IOptions {
   lunchTime: number;
   tolerance: number;
   workHours: number;
+  monthYear: string;
   showGrid: boolean;
   verbose: boolean;
   forceNocache: boolean;
@@ -134,8 +135,10 @@ export default class AhgoraService {
       throw new Error('Not logged in');
     }
 
+    const monthYear = this.options.monthYear || '';
+
     const breaker = this.options.forceNocache ? Math.random() : 0;
-    const result = await axios.get<string>(`${this.url}/externo/batidas?cache=${this.options.user}&breaker=${breaker}`, {
+    const result = await axios.get<string>(`${this.url}/externo/batidas/${monthYear}?cache=${this.options.user}&breaker=${breaker}`, {
       headers: {
         'Cookie': this.cookie.split(';')[0],
       },
@@ -159,7 +162,7 @@ export default class AhgoraService {
 
   public parseResult(times: ITimes) {
     this.debug('parseResult()');
-    const today = this.getToday(times);
+    const today = this.getToday(times) || { beats: [] };
     const t1 = moment(today.beats[0], this.hourMinuteFormat);
     const t2 = moment(today.beats[1], this.hourMinuteFormat);
     const t3 = moment(today.beats[2], this.hourMinuteFormat);

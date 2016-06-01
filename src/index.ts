@@ -12,6 +12,7 @@ commander
   .option('-a, --lunch-at [HH:mm]', 'Lunch time', /^\d{2}:\d{2}$/, '11:30')
   .option('-l, --lunch-time [minutes]', 'Lunch minutes', (v, def) => +v || def, 60)
   .option('-w, --work-hours [hours]', 'Total work hours a day', (v, def) => +v, 8)
+  .option('-m, --month-year [mm-yyyy]', 'Month and year to fetch (MM-YYYY format)')
   .option('-s, --show-grid', 'Shows whole month grid')
   .option('-v, --verbose', 'Calculates and predicts times')
   .option('-f, --force-nocache', 'Try to force no-cache')
@@ -26,6 +27,7 @@ const options: IOptions = {
   lunchTime: commander.lunchTime || +process.env.AHGORA_LUNCHTIME || 60,
   tolerance: commander.tolerance || +process.env.AHGORA_TOLERANCE || 10,
   workHours: commander.workHours || +process.env.AHGORA_WORKHOURS || 8,
+  monthYear: commander.monthYear,
   showGrid: commander.showGrid || !!process.env.AHGORA_SHOWGRID || false,
   verbose: commander.verbose || !!process.env.AHGORA_VERBOSE || false,
   forceNocache: !!commander.forceNocache,
