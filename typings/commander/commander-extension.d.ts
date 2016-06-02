@@ -6,8 +6,8 @@ declare namespace commander {
     lunchAt: string;
     lunchTime: number;
     tolerance: number;
-    workHours: number;
     monthYear: string;
+    workHours: string;
     showGrid: boolean;
     verbose: boolean;
     forceNocache: boolean;

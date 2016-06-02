@@ -11,8 +11,8 @@ export interface IOptions {
   lunchAt: string;
   lunchTime: number;
   tolerance: number;
-  workHours: number;
   monthYear: string;
+  workHours: string;
   showGrid: boolean;
   verbose: boolean;
   forceNocache: boolean;
@@ -46,6 +46,9 @@ export default class AhgoraService {
   private minutesUnity = 'minutes';
 
   constructor(private options: IOptions) {
+    if (!/^\d{2}:\d{2}$/.test(options.workHours)) {
+      options.workHours = `${`0${options.workHours}`.slice(-2)}:00`;
+    }
     this.debug('Options', options);
   }
 
@@ -185,7 +188,7 @@ export default class AhgoraService {
         section.add(-t1.hour(), 'hours');
         section.add(-t1.minute(), 'minutes');
 
-        const d = moment(`0${this.options.workHours}0000`.slice(-6), 'HHmmss');
+        const d = moment(`${this.options.workHours}00`.slice(-6), 'HHmmss');
         d.add(-section.hour(), 'hours');
         d.add(-section.minute(), 'minutes');
 
@@ -234,7 +237,8 @@ export default class AhgoraService {
 
     const scenarios = [];
 
-    const day = moment(`0${this.options.workHours}00`.slice(-4), this.hourMinuteFormat);
+    console.log(this.options.workHours);
+    const day = moment(this.options.workHours, this.hourMinuteFormat);
     const morning = this.subTime(t2, t1);
     const afternoon = this.subTime(t4, t3);
 
@@ -243,7 +247,7 @@ export default class AhgoraService {
       : moment(morning);
 
     if (t4.isValid()) {
-      if (workedHours.isAfter(moment(day).add(10, this.minutesUnity))) {
+      if (workedHours.isAfter(moment(day).add(this.options.tolerance, this.minutesUnity))) {
         const timeToRemove = this.subTime(workedHours, day);
         {
           // Scenario 1 - Remove from end of the day
@@ -251,7 +255,7 @@ export default class AhgoraService {
           scenarios.push(`${time1} ${time2} ${time3} *${newEndTime.format(this.hourMinuteFormat)}*`);
         }
       }
-      else if (workedHours.isBefore(moment(day).add(-10, this.minutesUnity))) {
+      else if (workedHours.isBefore(moment(day).add(-this.options.tolerance, this.minutesUnity))) {
         const timeToAdd = this.subTime(day, workedHours);
         {
           // Scenario 1 - Add to the end of the day
