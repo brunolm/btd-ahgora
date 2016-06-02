@@ -11,7 +11,7 @@ commander
   .option('-t, --tolerance [minutes]', 'Tolerance minutes', (v, def) => +v || def, 10)
   .option('-a, --lunch-at [HH:mm]', 'Lunch time', /^\d{2}:\d{2}$/, '11:30')
   .option('-l, --lunch-time [minutes]', 'Lunch minutes', (v, def) => +v || def, 60)
-  .option('-w, --work-hours [hours]', 'Total work hours a day', (v, def) => +v, 8)
+  .option('-w, --work-hours [hours]', 'Total work hours a day')
   .option('-m, --month-year [mm-yyyy]', 'Month and year to fetch (MM-YYYY format)')
   .option('-s, --show-grid', 'Shows whole month grid')
   .option('-v, --verbose', 'Calculates and predicts times')

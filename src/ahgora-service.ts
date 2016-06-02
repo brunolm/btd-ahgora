@@ -237,7 +237,6 @@ export default class AhgoraService {
 
     const scenarios = [];
 
-    console.log(this.options.workHours);
     const day = moment(this.options.workHours, this.hourMinuteFormat);
     const morning = this.subTime(t2, t1);
     const afternoon = this.subTime(t4, t3);
