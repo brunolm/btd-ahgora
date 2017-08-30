@@ -1,8 +1,8 @@
-import * as axios from 'axios';
-import * as querystring from 'querystring';
-import * as jquery from 'jquery';
-import * as jsdom from 'jsdom';
 import * as moment from 'moment';
+import * as querystring from 'querystring';
+
+import { JSDOM } from 'jsdom';
+import axios from 'axios';
 
 export interface IOptions {
   company: string;
@@ -13,7 +13,6 @@ export interface IOptions {
   tolerance: number;
   monthYear: string;
   workHours: string;
-  showGrid: boolean;
   verbose: boolean;
   forceNocache: boolean;
   debug: boolean;
@@ -59,8 +58,8 @@ export default class AhgoraService {
       matricula: this.options.user,
       senha: this.options.pass,
     }), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
 
     this.cookie = loginData.headers['set-cookie'][0];
     this.debug('Cookie: ', this.cookie);
@@ -68,65 +67,82 @@ export default class AhgoraService {
     return this.cookie;
   }
 
+  nextOfKind<T extends HTMLElement>(from: T, tagName: string) {
+    let next = from;
+    while ((next = next.nextSibling as T)) {
+      if (next.nodeName === tagName) {
+        return next;
+      }
+    }
+
+    return undefined;
+  }
+
   public parseHTML(html: string): Promise<{ summary: string, times: ITimes }> {
     return new Promise((resolve, reject) => {
-      jsdom.env(html, (err, window) => {
-        const $: JQueryStatic = <any>jquery(window);
+      const dom = new JSDOM(html);
+      const window = dom.window;
+      const document = window.document;
 
-        const summary = $('#tableTotalize').text()
-          .replace(/ {2,}/g, ' ')
-          .replace(/(\s?\n){2,}/g, '\n').trim();
+      const tableTotalize = document.querySelector('#tableTotalize') as HTMLTableElement;
 
-        const timetable = $('#tableTotalize').nextAll('table:first');
+      const summary = tableTotalize.textContent
+        .replace(/ {2,}/g, ' ')
+        .replace(/(\s?\n){2,}/g, '\n').trim();
 
-        const times = {};
-        timetable.find('tbody > tr').each((i, element) => {
-          const key = $(element).find('td[rowspan]:first').text().trim();
+      const timetable: HTMLTableElement = this.nextOfKind(tableTotalize, 'TABLE');
 
-          if (key) {
-            const beatsRaw = $('td:eq(2)', element).text().trim();
-            times[key] = {
-              date: moment(key, 'DD/MM/YYYY'),
-              beats: beatsRaw.length ? beatsRaw.split(/\s*,\s*/g) : [],
-              beatsRaw: beatsRaw,
-              total: $('td:eq(6)', element).text().trim(),
+      const times = {};
+      const trs = timetable.querySelectorAll('tbody > tr') as NodeListOf<HTMLElement>;
+
+      for (const element of trs) {
+        const key = element.querySelector('td[rowspan]').textContent.trim();
+
+        if (key) {
+          const beatsRaw = element.querySelector('td:nth-child(3)').textContent.trim();
+
+          times[key] = {
+            date: moment(key, 'DD/MM/YYYY'),
+            beats: beatsRaw.length ? beatsRaw.split(/\s*,\s*/g) : [],
+            beatsRaw: beatsRaw,
+            total: element.querySelector('td:nth-child(7)').textContent.trim(),
+          };
+
+          times[key].patch = {
+            correct: {
+              time: element.querySelector('td:nth-child(4)').textContent.trim(),
+              type: element.querySelector('td:nth-child(5)').textContent.trim(),
+              reason: element.querySelector('td:nth-child(6)').textContent.trim(),
+            },
+            wrong: {
+              time: '',
+              type: '',
+              reason: '',
+            },
+          };
+
+          const nextRow = this.nextOfKind(element, 'TR');
+          const nextHasInfo = nextRow && nextRow.querySelectorAll('td').length <= 3;
+
+          if (nextHasInfo) {
+            times[key].patch.wrong = {
+              time: nextRow.querySelector('td:nth-child(1)').textContent.trim(),
+              type: nextRow.querySelector('td:nth-child(2)').textContent.trim(),
+              reason: nextRow.querySelector('td:nth-child(3)').textContent.trim(),
             };
-            times[key].patch = {
-              correct: {
-                time: $('td:eq(3)', element).text().trim(),
-                type: $('td:eq(4)', element).text().trim(),
-                reason: $('td:eq(5)', element).text().trim(),
-              },
-              wrong: {
-                time: '',
-                type: '',
-                reason: '',
-              },
-            };
 
-            const nextHasInfo = $(element).next('tr').length && $(element).next('tr').find('td').length <= 3;
-
-            if (nextHasInfo) {
-              const extraInfo = $(element).next('tr');
-              times[key].patch.wrong = {
-                time: $('td:eq(0)', extraInfo).text().trim(),
-                type: $('td:eq(1)', extraInfo).text().trim(),
-                reason: $('td:eq(2)', extraInfo).text().trim(),
-              };
-
-              if (/esquecimento/i.test(times[key].patch.wrong.reason)) {
-                const wrong = times[key].patch.wrong;
-                times[key].patch.wrong = times[key].patch.correct;
-                times[key].patch.correct = wrong;
-              }
+            if (/esquecimento/i.test(times[key].patch.wrong.reason)) {
+              const wrong = times[key].patch.wrong;
+              times[key].patch.wrong = times[key].patch.correct;
+              times[key].patch.correct = wrong;
             }
           }
-        });
+        }
+      }
 
-        return resolve({
-          summary,
-          times
-        });
+      return resolve({
+        summary,
+        times
       });
     });
   }
@@ -141,7 +157,7 @@ export default class AhgoraService {
     const monthYear = this.options.monthYear || '';
 
     const breaker = this.options.forceNocache ? Math.random() : 0;
-    const result = await axios.get<string>(`${this.url}/externo/batidas/${monthYear}?cache=${this.options.user}&breaker=${breaker}`, {
+    const result = await axios.get(`${this.url}/externo/batidas/${monthYear}?cache=${this.options.user}&breaker=${breaker}`, {
       headers: {
         'Cookie': this.cookie.split(';')[0],
       },
@@ -228,7 +244,7 @@ export default class AhgoraService {
   }
 
   public calc(time1: string, time2: string, time3: string, time4: string) {
-    const [ t1, t2, t3, t4 ] = [
+    const [t1, t2, t3, t4] = [
       moment(time1, this.hourMinuteFormat),
       moment(time2, this.hourMinuteFormat),
       moment(time3, this.hourMinuteFormat),
@@ -242,11 +258,11 @@ export default class AhgoraService {
     const afternoon = this.subTime(t4, t3);
 
     const workedHours = t4.isValid()
-      ? moment(morning).add(afternoon.hour(), this.hoursUnity).add(afternoon.minute(), this.minutesUnity)
+      ? moment(morning).add(afternoon.hour() as any, this.hoursUnity).add(afternoon.minute() as any, this.minutesUnity)
       : moment(morning);
 
     if (t4.isValid()) {
-      if (workedHours.isAfter(moment(day).add(this.options.tolerance, this.minutesUnity))) {
+      if (workedHours.isAfter(moment(day).add(this.options.tolerance as any, this.minutesUnity))) {
         const timeToRemove = this.subTime(workedHours, day);
         {
           // Scenario 1 - Remove from end of the day
@@ -254,7 +270,7 @@ export default class AhgoraService {
           scenarios.push(`${time1} ${time2} ${time3} *${newEndTime.format(this.hourMinuteFormat)}*`);
         }
       }
-      else if (workedHours.isBefore(moment(day).add(-this.options.tolerance, this.minutesUnity))) {
+      else if (workedHours.isBefore(moment(day).add(-this.options.tolerance as any, this.minutesUnity))) {
         const timeToAdd = this.subTime(day, workedHours);
         {
           // Scenario 1 - Add to the end of the day
@@ -281,14 +297,14 @@ export default class AhgoraService {
 
   private addTime(target: moment.Moment, date: moment.Moment) {
     return moment(target)
-      .add(date.hour(), this.hoursUnity)
-      .add(date.minute(), this.minutesUnity);
+      .add(date.hour() as any, this.hoursUnity)
+      .add(date.minute() as any, this.minutesUnity);
   }
 
   private subTime(target: moment.Moment, date: moment.Moment) {
     return moment(target)
-      .add(-date.hour(), this.hoursUnity)
-      .add(-date.minute(), this.minutesUnity);
+      .add(-date.hour() as any, this.hoursUnity)
+      .add(-date.minute() as any, this.minutesUnity);
   }
 
   private debug(msg?: string, ...args: any[]) {

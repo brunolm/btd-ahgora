@@ -5,7 +5,8 @@
         "noImplicitAny": false,
         "sourceMap": true,
         "newLine": "LF",
-        "outDir": "built"
+        "outDir": "built",
+        "declaration": true
     },
     "exclude": [
         "node_modules"

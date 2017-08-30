@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import commander = require('commander');
-import run from './cli';
+import * as commander from 'commander';
+
 import { IOptions } from './ahgora-service';
+import run from './cli';
 
 commander
   .option('-c, --company [code]', 'AHGora company code')
@@ -13,7 +14,6 @@ commander
   .option('-l, --lunch-time [minutes]', 'Lunch minutes', (v, def) => +v || def, 60)
   .option('-w, --work-hours [hours]', 'Total work hours a day')
   .option('-m, --month-year [mm-yyyy]', 'Month and year to fetch (MM-YYYY format)')
-  .option('-s, --show-grid', 'Shows whole month grid')
   .option('-v, --verbose', 'Calculates and predicts times')
   .option('-f, --force-nocache', 'Try to force no-cache')
   .option('-d, --debug', 'Show debug information')
@@ -28,15 +28,10 @@ const options: IOptions = {
   tolerance: commander.tolerance || +process.env.AHGORA_TOLERANCE || 10,
   monthYear: commander.monthYear,
   workHours: commander.workHours || process.env.AHGORA_WORKHOURS || '08:00',
-  showGrid: commander.showGrid || !!process.env.AHGORA_SHOWGRID || false,
   verbose: commander.verbose || !!process.env.AHGORA_VERBOSE || false,
   forceNocache: !!commander.forceNocache,
   debug: !!commander.debug,
 };
-
-if (options.verbose) {
-  options.showGrid = true;
-}
 
 const nameof = exp => exp.toString().match(/[.](\w+)/)[1];
 

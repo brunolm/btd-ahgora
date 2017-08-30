@@ -6,7 +6,7 @@ export default async function run(options: IOptions) {
   await service.login();
   const data = await service.getTimes();
 
-  if (options.showGrid) {
+  if (options.verbose) {
     const msg = service.parseGrid(data.times);
 
     console.log(msg);
